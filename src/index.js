@@ -23,22 +23,23 @@ app.get("/read", (req, res) => {
 
 app.get("/write", (req, res) => {
   fs.readFile(userFilePath, (error, data) => {
-    if (error)
-      return res.status(500).send("Error 500: error al leer el archivo");
+    if (error) return res.status(500).send("Error al leer archivo");
+
+    const newUser = {
+      userId: "13",
+      name: "Tay Swift",
+      email: "taytay@hotmail.com",
+    };
 
     const jsonData = JSON.parse(data);
-    res.send(jsonData);
-  });
 
-  const newUser = JSON.stringify({
-    userId: "e65e1490-c230-4043-80bc-ea32fee5f57c",
-    name: "Tay Swift",
-    email: "taytay@hotmail.com",
-  });
+    jsonData.push(newUser);
 
-  fs.writeFile(userFilePath, newUser, error => {
-    if (error)
-      return res.status(500).send("Error 500: error al leer el archivo");
-    res.end();
+    fs.writeFile(userFilePath, JSON.stringify(jsonData), error => {
+      if (error)
+        return res.status(500).send("Error 500: error al escribir el archivo");
+
+      res.end();
+    });
   });
 });
