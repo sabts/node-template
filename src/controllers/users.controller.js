@@ -1,10 +1,11 @@
 const fs = require("fs");
 const path = require("path");
+const { json } = require("stream/consumers");
 const userFilePath = path.resolve(__dirname, "../../data/users.json");
 
 const usersControler = {};
 
-app.get("/read", (req, res) => {
+usersControler.readAllUser("/read", (req, res) => {
   fs.readFile(userFilePath, (error, data) => {
     if (error)
       return res.status(500).send("Error 500: error al leer el archivo");
