@@ -12,10 +12,7 @@ app.get("/read", (req, res) => {
   fs.readFile(userFilePath, (error, data) => {
     if (error)
       return res.status(500).send("Error 500: error al leer el archivo");
-    else {
-      jsonData = [...newUser];
-      console.log(jsonData);
-    }
+
     const jsonData = JSON.parse(data);
     res.send(jsonData);
   });
