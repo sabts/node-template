@@ -1,11 +1,13 @@
+const { error } = require("console");
 const fs = require("fs");
 const path = require("path");
 const { json } = require("stream/consumers");
+const { v4 } = require("uuid");
 const userFilePath = path.resolve(__dirname, "../../data/users.json");
 
-const usersControler = {};
+const usersController = {};
 
-usersControler.readAllUser("/read", (req, res) => {
+usersController.readAllUser = (req, res) => {
   fs.readFile(userFilePath, (error, data) => {
     if (error)
       return res.status(500).send("Error 500: error al leer el archivo");
@@ -13,27 +15,54 @@ usersControler.readAllUser("/read", (req, res) => {
     const jsonData = JSON.parse(data);
     res.send(jsonData);
   });
-});
+};
 
-app.get("/write", (req, res) => {
+usersController.readUserById = (req, res) => {
+  const { id } = req.params;
+
   fs.readFile(userFilePath, (error, data) => {
-    if (error) return res.status(500).send("Error al leer archivo");
+    if (error)
+      return res.status(500).send("Error 500: error al leer el archivo");
 
-    const newUser = {
-      userId: "13",
-      name: "Tay Swift",
-      email: "taytay@hotmail.com",
-    };
+    const users = JSON.parse(data);
+    const user = users.find(user => user.userId === id);
 
-    const jsonData = JSON.parse(data);
+    if (!user) {
+      return res.status(404).send("Usuario no encontrado");
+    }
 
-    jsonData.push(newUser);
+    res.send(user);
+  });
+};
 
-    fs.writeFile(userFilePath, JSON.stringify(jsonData), error => {
-      if (error)
-        return res.status(500).send("Error 500: error al escribir el archivo");
+usersController.createNewUser = (req, res) => {
+  const { name, email } = req.body;
 
-      res.end();
+  fs.readFile(userFilePath, (error, data) => {
+    if (error) {
+      return res.status(500).send("Error 500: error al crear el usuario");
+    }
+
+    let users = JSON.parse(data);
+
+    const emailExists = users.some(user => user.email === email);
+    if (emailExists) {
+      return res.status(409).send("Este correo ya está registrado");
+    }
+
+    const userId = v4();
+    const newUser = { userId, name, email };
+
+    users = JSON.stringify([...users, newUser]);
+
+    fs.writeFile(userFilePath, users, error => {
+      if (error) {
+        return res.status(500).send("Error 500: error al guardar el archivo");
+      }
+
+      res.send(newUser);
     });
   });
-});
+};
+
+module.exports = usersController;
